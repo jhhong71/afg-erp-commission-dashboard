@@ -1,705 +1,488 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실적현황 및 관리대상계약</title>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* CSS Reset 및 공통 스타일 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #ffffff; color: #333; padding: 1.5rem; }
-        .container { max-width: 72rem; margin: 0 auto; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AFG ERP · 실적현황 대시보드 (Sanitized Demo)</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --ink:#1f2433; --muted:#7c8290; --border:#e7e9ee; --bg:#f4f5f8;
+    --blue:#3258e0; --blue-dark:#1b2e8a; --blue-soft:#eef1ff;
+    --purple:#a855f7; --skyblue:#38bdf8; --yellow:#eab308; --orange:#fb923c; --green:#34d399; --lightblue:#60a5fa;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif; background:var(--bg); color:var(--ink); word-break:keep-all; -webkit-font-smoothing:antialiased; }
 
-        /* 헤더 영역 */
-        .header-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .header-left { display: flex; align-items: center; gap: 0.75rem; }
-        .title { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0; }
-        .badge { background-color: #f3f4f6; color: #4b5563; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+  /* ---------------- topbar ---------------- */
+  .topbar{ display:flex; align-items:center; gap:1.4rem; background:#fff; border-bottom:1px solid var(--border); padding:0.65rem 1.4rem; }
+  .brand{ display:flex; align-items:center; gap:0.4rem; font-weight:800; font-size:1.05rem; color:var(--blue-dark); flex-shrink:0; }
+  .brand svg{ width:22px; height:22px; }
+  .topnav{ display:flex; gap:1.1rem; flex:1; overflow:hidden; }
+  .topnav a{ color:#4b5160; font-size:0.84rem; font-weight:600; white-space:nowrap; }
+  .top-actions{ display:flex; align-items:center; gap:1.1rem; flex-shrink:0; }
+  .top-actions .iconlink{ display:flex; flex-direction:column; align-items:center; gap:0.2rem; color:#8a8f9b; font-size:0.65rem; }
+  .top-actions .iconlink svg{ width:18px; height:18px; }
+  .top-actions .search{ color:#8a8f9b; }
+  .top-actions .search svg{ width:18px; height:18px; }
+  .user-chip{ display:flex; align-items:center; gap:0.5rem; padding-left:0.9rem; border-left:1px solid var(--border); }
+  .user-avatar{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#a855f7,#3258e0); }
+  .user-meta{ font-size:0.78rem; color:#4b5160; line-height:1.25; }
+  .user-meta .timer{ color:#ef4444; font-weight:700; }
+  .icon-btn-plain{ color:#8a8f9b; display:flex; }
+  .icon-btn-plain svg{ width:18px; height:18px; }
 
-        /* 토글 버튼 (기존 스크립트 호환용 ul/li 구조로 변경) */
-        ul.switch { list-style: none; display: inline-flex; background-color: #f1f5f9; border-radius: 9999px; padding: 2px; position: relative; margin: 0; }
-        ul.switch li { padding: 4px 16px; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; z-index: 1; text-align: center; }
-        ul.switch li.active { background-color: #ffffff; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  /* ---------------- layout ---------------- */
+  .layout{ display:grid; grid-template-columns:1.65fr 1.05fr 0.95fr; gap:1rem; padding:1.1rem; max-width:1880px; margin:0 auto; }
 
-        /* 필터 영역 */
-        .filter-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .btn-group { display: flex; gap: 0.5rem; }
-        .btn-dark { background-color: #0f172a; color: #ffffff; padding: 0.5rem 1.5rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; }
-        .btn-light { background-color: #f1f5f9; color: #4b5563; padding: 0.5rem 1.5rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer; transition: background-color 0.2s; }
-        .btn-light:hover { background-color: #e5e7eb; }
-        .unit-text { font-size: 0.75rem; color: #6b7280; }
+  .card{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; }
+  .card__head{ display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.85rem; }
+  .card__title{ display:flex; align-items:baseline; gap:0.5rem; }
+  .card__title h2{ font-size:1rem; font-weight:800; margin:0; }
+  .card__title .sub{ font-size:0.76rem; color:var(--muted); }
+  .unit-text{ font-size:0.72rem; color:var(--muted); text-align:right; }
 
-        /* 테이블 영역 */
-        .table-responsive { overflow-x: auto; width: 100%; }
-        .custom-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.875rem; margin-bottom: 2rem; }
-        .custom-table th, .custom-table td { border: 1px solid #e2e8f0; padding: 0.75rem 0.5rem; vertical-align: middle; }
-        .custom-table thead th { background-color: #f8fafc; color: #64748b; font-weight: 600; }
-        .custom-table tbody td { font-size: 1rem; }
-        .val-large { font-size: 1.125rem; font-weight: 600; }
-        .text-red { color: #ef4444; font-size: 0.875rem; font-weight: 700; margin-right: 0.25rem; }
-        .text-blue { color: #3b82f6; font-size: 0.875rem; font-weight: 700; margin-right: 0.25rem; }
-        .text-gray-sm { font-size: 0.875rem; font-weight: 400; color: #6b7280; }
+  .toggle2{ display:flex; background:var(--bg); border-radius:999px; padding:3px; }
+  .toggle2 button{ border:none; background:none; font-size:0.78rem; font-weight:700; color:#9aa0ac; padding:0.32rem 0.95rem; border-radius:999px; cursor:pointer; }
+  .toggle2 button.is-active{ background:#1c1f27; color:#fff; }
 
-        /* 차트 영역 */
-        .chart-wrap { position: relative; width: 100%; height: 350px; margin-top: 2rem; margin-bottom: 3rem; }
-        .w-full-h-full { width: 100%; height: 100%; display: block; }
+  .seg{ display:flex; gap:0.5rem; }
+  .seg button{ border:1px solid var(--border); background:#fff; color:#6b7280; font-size:0.82rem; font-weight:700; padding:0.42rem 1.1rem; border-radius:8px; cursor:pointer; }
+  .seg button.is-active{ background:#1c1f27; color:#fff; border-color:#1c1f27; }
 
-        /* 관리대상계약 영역 (하단 섹션) */
-        .bottom-section { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #f3f4f6; }
-        .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
-        .section-title { font-size: 1.125rem; font-weight: 700; color: #1f2937; margin: 0; }
-        .section-desc { font-size: 0.875rem; color: #6b7280; }
+  .tabs{ display:flex; gap:1.3rem; border-bottom:1px solid var(--border); margin-bottom:0.6rem; }
+  .tabs button{ border:none; background:none; padding:0.1rem 0 0.7rem; font-size:0.88rem; font-weight:700; color:#9aa0ac; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .tabs button.is-active{ color:var(--ink); border-color:var(--ink); }
 
-        /* 카드 그리드 영역 */
-        .card-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        @media (min-width: 768px) { .card-grid { grid-template-columns: repeat(4, 1fr); } }
-        .card { background-color: #fafafa; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; }
-        .card-title { font-size: 0.875rem; font-weight: 700; color: #374151; margin: 0 0 1.5rem 0; }
+  /* perf table */
+  .perf-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:0.7rem; }
+  table.dash-table{ width:100%; border-collapse:collapse; text-align:center; font-size:0.8rem; margin-bottom:0.9rem; }
+  table.dash-table th, table.dash-table td{ border:1px solid var(--border); padding:0.55rem 0.4rem; }
+  table.dash-table thead tr:first-child th{ background:var(--bg); color:#6b7280; font-weight:700; font-size:0.78rem; }
+  table.dash-table thead tr:last-child th{ color:#9aa0ac; font-weight:600; font-size:0.74rem; }
+  table.dash-table td{ font-size:0.95rem; font-weight:700; }
+  .up{ color:#ef4444; font-size:0.74rem; font-weight:700; margin-right:0.2rem; }
+  .down{ color:#3b82f6; font-size:0.74rem; font-weight:700; margin-right:0.2rem; }
+  .flat{ color:#9aa0ac; font-size:0.74rem; font-weight:700; margin-right:0.2rem; }
+  .pct{ font-size:0.76rem; font-weight:500; color:#9aa0ac; }
 
-        /* 도넛 차트 및 내부 텍스트 */
-        .chart-container { position: relative; width: 8rem; height: 8rem; margin-bottom: 1.5rem; }
-        .chart-center { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; margin-top: 0.5rem; }
-        .chart-val { font-size: 1.5rem; font-weight: 700; color: #1f2937; line-height: 1; }
-        .chart-unit { font-size: 0.875rem; font-weight: 400; margin-left: 0.125rem; }
+  .legend-row{ display:flex; justify-content:flex-end; gap:1rem; font-size:0.76rem; color:#6b7280; margin-bottom:0.4rem; }
+  .legend-row span{ display:inline-flex; align-items:center; gap:0.35rem; }
+  .legend-row i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .chart-box{ position:relative; width:100%; height:280px; }
 
-        /* 범례 (Legend) */
-        .legend-wrap { width: 100%; padding: 0 0.5rem; box-sizing: border-box; }
-        .legend-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem; color: #475569; padding: 2px 0; }
-        .legend-label { display: flex; align-items: center; gap: 0.5rem; }
-        .legend-dot { width: 0.625rem; height: 0.625rem; border-radius: 0.25rem; display: inline-block; }
-        .legend-val { font-weight: 600; color: #1e293b; }
+  /* rank table */
+  .rank-table{ width:100%; border-collapse:collapse; text-align:center; font-size:0.84rem; }
+  .rank-table th, .rank-table td{ padding:0.6rem 0.3rem; border-bottom:1px solid var(--border); }
+  .rank-table thead th{ color:#9aa0ac; font-weight:700; font-size:0.76rem; border-top:1px solid var(--border); background:var(--bg); }
+  .rank-table td:nth-child(2){ color:#6b7280; }
+  .rank-table tr:first-child td{ font-weight:800; color:var(--blue-dark); }
+  .rank-num{ display:inline-flex; width:22px; height:22px; border-radius:50%; background:var(--bg); align-items:center; justify-content:center; font-weight:700; font-size:0.78rem; }
+  .rank-table tr:first-child .rank-num{ background:var(--blue); color:#fff; }
 
-        /* 색상 클래스 */
-        .bg-purple { background-color: #a855f7; }
-        .bg-blue { background-color: #38bdf8; }
-        .bg-yellow { background-color: #eab308; }
-        .bg-orange { background-color: #fb923c; }
-        .bg-green { background-color: #34d399; }
-        .bg-blue-light { background-color: #60a5fa; }
-    </style>
+  /* right column toolbar + banner */
+  .toolbar-card{ display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.1rem; margin-bottom:0.85rem; }
+  .toolbar-card .pillbtns{ display:flex; gap:0.5rem; }
+  .pillbtn{ display:flex; align-items:center; gap:0.4rem; border:1px solid var(--border); border-radius:999px; padding:0.4rem 0.85rem; font-size:0.78rem; font-weight:700; color:#4b5160; }
+  .pillbtn svg{ width:14px; height:14px; }
+  .edu-badge{ display:flex; align-items:center; gap:0.4rem; font-size:0.72rem; color:#9aa0ac; }
+  .edu-badge svg{ width:14px; height:14px; }
+  .edu-badge strong{ color:#4b5160; }
+
+  .banner-card{ position:relative; overflow:hidden; border-radius:14px; flex:1; min-height:360px; background:
+      radial-gradient(120% 140% at 15% 0%, #4d6bff 0%, #2b3fb8 38%, #15184f 75%);
+    color:#fff; display:flex; flex-direction:column; justify-content:space-between; padding:1.6rem; }
+  .banner-card::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 85% 18%, rgba(255,255,255,0.16) 0, transparent 45%),
+      radial-gradient(circle at 15% 85%, rgba(168,85,247,0.35) 0, transparent 55%);
+  }
+  .banner-card .ring{ position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,0.18); }
+  .banner-card .ring--a{ width:260px; height:260px; right:-90px; top:-70px; }
+  .banner-card .ring--b{ width:170px; height:170px; right:-30px; top:40px; border-color:rgba(255,255,255,0.12); }
+  .banner-card__eyebrow{ position:relative; z-index:1; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#bcd0ff; font-weight:700; }
+  .banner-card__title{ position:relative; z-index:1; font-size:1.45rem; font-weight:800; line-height:1.35; margin-top:0.6rem; }
+  .banner-card__title em{ color:#9fe6c8; font-style:normal; }
+  .banner-card__desc{ position:relative; z-index:1; font-size:0.82rem; color:#cfd8ff; margin-top:0.55rem; line-height:1.6; }
+  .banner-card__cta{ position:relative; z-index:1; display:inline-flex; align-items:center; gap:0.4rem; align-self:flex-start; background:#fff; color:#1b2e8a; font-size:0.82rem; font-weight:800; padding:0.55rem 1.1rem; border-radius:999px; margin-top:1.1rem; }
+  .banner-card__dots{ position:relative; z-index:1; display:flex; gap:0.4rem; }
+  .banner-card__dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.35); }
+  .banner-card__dots span.is-active{ width:18px; border-radius:4px; background:#fff; }
+
+  /* 계약관리 */
+  .ctr-mgmt-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+  .mini-label{ font-size:0.78rem; font-weight:800; color:#4b5160; margin-bottom:0.5rem; }
+  .mini-table{ width:100%; border-collapse:collapse; font-size:0.84rem; }
+  .mini-table td{ padding:0.5rem 0.2rem; border-bottom:1px solid var(--border); }
+  .mini-table td:first-child{ color:#6b7280; width:40%; }
+  .mini-table td:last-child{ text-align:right; font-weight:700; }
+
+  /* 관리대상계약 donuts */
+  .donut-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.9rem; }
+  .donut-head .range{ font-size:0.74rem; color:var(--muted); }
+  .donut-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:0.7rem; }
+  .donut-card{ background:var(--bg); border-radius:12px; padding:1rem 0.6rem; display:flex; flex-direction:column; align-items:center; }
+  .donut-card h4{ font-size:0.78rem; font-weight:700; color:#4b5160; margin:0 0 0.8rem; }
+  .donut-wrap{ position:relative; width:6.4rem; height:6.4rem; margin-bottom:0.9rem; }
+  .donut-center{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .donut-center b{ font-size:1.15rem; font-weight:800; color:var(--ink); }
+  .donut-center small{ font-size:0.72rem; font-weight:600; color:var(--muted); margin-left:0.1rem; }
+  .donut-legend{ width:100%; font-size:0.72rem; }
+  .donut-legend li{ display:flex; justify-content:space-between; align-items:center; list-style:none; padding:0.15rem 0; color:#5b6270; }
+  .donut-legend .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:0.4rem; }
+  .donut-legend b{ color:#1f2433; }
+
+  /* 게시판 */
+  .board-list{ list-style:none; margin:0; padding:0; }
+  .board-list li{ display:grid; grid-template-columns:5.4rem 1fr auto auto; align-items:center; gap:0.6rem; padding:0.55rem 0.1rem; border-bottom:1px solid var(--border); font-size:0.82rem; }
+  .board-list li:last-child{ border-bottom:none; }
+  .board-cat{ color:var(--blue); font-weight:700; font-size:0.76rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .board-title{ color:#3a3f4a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .board-author{ color:var(--muted); font-size:0.76rem; }
+  .board-date{ color:var(--muted); font-size:0.76rem; }
+
+  @media (max-width:1300px){
+    .layout{ grid-template-columns:1fr 1fr; }
+    .layout > :nth-child(3), .layout > :nth-child(6){ grid-column:1 / -1; }
+  }
+  @media (max-width:760px){
+    .topnav{ display:none; }
+    .layout{ grid-template-columns:1fr; padding:0.9rem; }
+    .ctr-mgmt-grid, .donut-grid{ grid-template-columns:1fr 1fr; }
+  }
+</style>
 </head>
 <body>
 
-    <div class="container" id="wrap">
-
-        <!-- Header Section -->
-        <div class="header-wrap">
-            <div class="header-left">
-                <h1 class="title">실적현황</h1>
-                <span class="badge">일시납 제외</span>
-            </div>
-            <div class="right" style="position: static;">
-                <ul class="switch ck1">
-                    <li class="active" data-target="personal" name="btn_cntr_pf">본인</li>
-                    <li data-target="org" name="btn_cntr_pf">조직</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Filter/Tabs Section -->
-        <div class="filter-wrap">
-            <div class="btn-group">
-                <button class="btn-dark">장기합계</button>
-                <button class="btn-light">생보장기</button>
-                <button class="btn-light">손보장기</button>
-            </div>
-            <div class="unit-text">(단위: 천원, 건)</div>
-        </div>
-
-        <!-- Data Table (Performance Wrapper) -->
-        <div class="performance">
-
-            <!-- 본인 테이블 -->
-            <div id="personal" class="result_tb table-responsive">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th colspan="2">당월 실적 (본인)</th>
-                            <th colspan="2">전월 실적</th>
-                            <th colspan="2">전년 동월 실적</th>
-                            <th colspan="2">당월 목표</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 6rem;">건수</th>
-                            <th>보험료</th>
-                            <th style="width: 6rem;">진척율</th>
-                            <th>전월실적</th>
-                            <th style="width: 6rem;">진척율</th>
-                            <th>전년실적</th>
-                            <th style="width: 6rem;">진척율</th>
-                            <th>당월목표</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="val-large" id="EMP_ALL_CNT">999</td>
-                            <td>
-                                <span class="text-red">↑34%</span>
-                                <span class="val-large" id="EMP_CMM_ALL_FST_PREM">9,999</span>
-                            </td>
-                            <td class="val-large">999 <span class="text-gray-sm">%</span></td>
-                            <td>
-                                <span class="text-blue">↓14%</span>
-                                <span class="val-large" id="EMP_PMM_ALL_FST_PREM">9,999</span>
-                            </td>
-                            <td class="val-large"><span id="EMP_PMM_ALL_FST_RTO">150</span> <span class="text-gray-sm">%</span></td>
-                            <td>
-                                <span class="text-red">↑34%</span>
-                                <span class="val-large">1,000,000</span>
-                            </td>
-                            <td class="val-large">50 <span class="text-gray-sm">%</span></td>
-                            <td>
-                                <span class="text-red">↑34%</span>
-                                <span class="val-large">3,000,000</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 조직 테이블 (기본 숨김) -->
-            <div id="org" class="result_tb table-responsive" style="display:none;">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th colspan="2">당월 실적 (조직)</th>
-                            <th colspan="2">전월 실적</th>
-                            <th colspan="2">전년 동월 실적</th>
-                            <th colspan="2">당월 목표</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 6rem;">건수</th>
-                            <th>보험료</th>
-                            <th style="width: 6rem;">진척율</th>
-                            <th>전월실적</th>
-                            <th style="width: 6rem;">진척율</th>
-                            <th>전년실적</th>
-                            <th style="width: 6rem;">진척율</th>
-                            <th>당월목표</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="val-large" id="ORG_ALL_CNT">999</td>
-                            <td>
-                                <span class="text-red">↑34%</span>
-                                <span class="val-large" id="ORG_CMM_ALL_FST_PREM">9,999</span>
-                            </td>
-                            <td class="val-large">999 <span class="text-gray-sm">%</span></td>
-                            <td>
-                                <span class="text-blue">↓14%</span>
-                                <span class="val-large" id="ORG_PMM_ALL_FST_PREM">9,999</span>
-                            </td>
-                            <td class="val-large"><span id="ORG_PMM_ALL_FST_RTO">150</span> <span class="text-gray-sm">%</span></td>
-                            <td>
-                                <span class="text-red">↑34%</span>
-                                <span class="val-large">1,000,000</span>
-                            </td>
-                            <td class="val-large">50 <span class="text-gray-sm">%</span></td>
-                            <td>
-                                <span class="text-red">↑34%</span>
-                                <span class="val-large">3,000,000</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-
-        <!-- Chart Section -->
-        <div class="chart-wrap" id="chartWrapper">
-            <canvas id="myCanvas" class="w-full-h-full"></canvas>
-        </div>
-
-        <!-- 관리대상계약 Section -->
-        <div class="bottom-section">
-            <div class="section-header">
-                <h2 class="section-title">관리대상계약</h2>
-                <span class="section-desc">영업정지 2026.02.01 ~ 2026.02.07</span>
-            </div>
-
-            <div class="card-grid">
-
-                <!-- Card 1: 만기리스트 -->
-                <div class="card">
-                    <h3 class="card-title">만기리스트</h3>
-
-                    <div class="chart-container">
-                        <canvas id="doughnut1"></canvas>
-                        <div class="chart-center">
-                            <span class="chart-val"><span id="CT_TOTAL_CNT_1">53</span><span class="chart-unit">건</span></span>
-                        </div>
-                    </div>
-
-                    <div class="legend-wrap">
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-purple"></span>생보
-                            </div>
-                            <span class="legend-val" id="CT_LIFE_CNT_1">21</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-blue"></span>손보
-                            </div>
-                            <span class="legend-val" id="CT_FIRE_CNT_1">32</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-yellow"></span>일반
-                            </div>
-                            <span class="legend-val" id="CT_GENERAL_CNT_1">4</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2: 유예/실효예정 -->
-                <div class="card">
-                    <h3 class="card-title">유예/실효예정</h3>
-
-                    <div class="chart-container">
-                        <canvas id="doughnut2"></canvas>
-                        <div class="chart-center">
-                            <span class="chart-val"><span id="CT_TOTAL_CNT_2">53</span><span class="chart-unit">건</span></span>
-                        </div>
-                    </div>
-
-                    <div class="legend-wrap">
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-purple"></span>생보
-                            </div>
-                            <span class="legend-val" id="CT_LIFE_CNT_2">21</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-blue"></span>손보
-                            </div>
-                            <span class="legend-val" id="CT_FIRE_CNT_2">32</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: 당월실효 -->
-                <div class="card">
-                    <h3 class="card-title">당월실효</h3>
-
-                    <div class="chart-container">
-                        <canvas id="doughnut3"></canvas>
-                        <div class="chart-center">
-                            <span class="chart-val"><span id="CT_TOTAL_CNT_3">0</span><span class="chart-unit">건</span></span>
-                        </div>
-                    </div>
-
-                    <div class="legend-wrap">
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-purple"></span>생보
-                            </div>
-                            <span class="legend-val" id="CT_LIFE_CNT_3">0</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-blue"></span>손보
-                            </div>
-                            <span class="legend-val" id="CT_FIRE_CNT_3">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 4: 서류미첨부 (매핑 포함) -->
-                <div class="card">
-                    <h3 class="card-title">서류미첨부</h3>
-
-                    <div class="chart-container">
-                        <canvas id="doughnut4"></canvas>
-                        <div class="chart-center">
-                            <span class="chart-val"><span id="CT_TOTAL_CNT_4">27</span><span class="chart-unit">건</span></span>
-                        </div>
-                    </div>
-
-                    <div class="legend-wrap">
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-blue-light"></span>비교안내
-                            </div>
-                            <span class="legend-val" id="CT_CMPR_DESC_CNT_4">2</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-orange"></span>고지의무
-                            </div>
-                            <span class="legend-val" id="CT_CCN_DUTY_CNT_4">4</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-label">
-                                <span class="legend-dot bg-green"></span>완판확인서
-                            </div>
-                            <span class="legend-val" id="CT_PSN_DATA_CNT_4">8</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 2 21h6.2L12 13.4 15.8 21H22z"/></svg>
+    AFG
+  </div>
+  <nav class="topnav">
+    <a href="#">인사관리</a>
+    <a href="#">계약관리</a>
+    <a href="#">영업지원</a>
+    <a href="#">교육</a>
+    <a href="#">리스크관리</a>
+    <a href="#">준법</a>
+    <a href="#">경영관리</a>
+    <a href="#">통계</a>
+    <a href="#">수수료관리</a>
+    <a href="#">게시판</a>
+    <a href="#">시스템관리</a>
+    <a href="#">개발자가이드</a>
+  </nav>
+  <div class="top-actions">
+    <span class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+    <span class="iconlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>전체메뉴</span>
+    <span class="iconlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3 6 6 1-4.5 4.5L17.5 20 12 17l-5.5 3 1-6.5L3 9l6-1Z"/></svg>마이메뉴</span>
+    <span class="iconlink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l7.5 16 2-7 7-2z"/></svg>바로가기</span>
+    <div class="user-chip">
+      <span class="user-avatar"></span>
+      <span class="user-meta">어센틱님 <span class="timer" id="sessionTimer">59:58</span></span>
+      <span class="icon-btn-plain" title="새로고침"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg></span>
+      <span class="icon-btn-plain" title="로그아웃"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5"/></svg></span>
     </div>
+  </div>
+</header>
 
-    <script>
-        // =================================================================================
-        // [필독] UI 테스트 및 에러 방지용 Mock(가짜) 객체 정의 (실제 시스템 반영 시 이 블록 전체 삭제)
-        // =================================================================================
-        var Session = {
-            getGaNo: function() { return 'GA123'; },
-            getEmpNo: function() { return 'EMP456'; },
-            getSysAuthCd: function() { return '11'; } // '99'면 관리자, 그외 일반
-        };
-        $.getSvrDate = function(format) { return '202604'; };
-        $.closeAllPopup = function() {};
-        $.isEmpty = function(val) { return (val === undefined || val === null || val === ''); };
-        $.bizServiceCall = function(params, isAsync, callbackName) {
-            // 빈 더미 데이터 리턴
-            var dummyReturn = {
-                getErrorFlag: function() { return false; },
-                getMsg: function() { return ""; },
-                jsonData: { DATA: [{}] },
-                getDataObject: function(name) { return []; }
-            };
-            var callbackFn = new Function("return " + callbackName)();
-            if (typeof callbackFn === "function") callbackFn(dummyReturn);
-        };
-        var GawebJson = function() {
-            this.setPoolName = function(name) {};
-            this.setService = function(name) {};
-            this.setMethod = function(name) {};
-            this.setData = function(key, val) {};
-        };
-        var GwbMsg = function(msg, type) { console.log("GwbMsg:", msg, type); };
-        var GaiaMaiPot02 = { openMenu: function(id) { console.log("Menu Open:", id); } };
-        // =================================================================================
+<main class="layout">
 
-        /********************************************************************************
-         * Global Variable
-         ********************************************************************************/
-        var gaNo = Session.getGaNo();
-        var empNo = Session.getEmpNo();
-        let gAuthLvlCd = Session.getSysAuthCd();
-        let today = $.getSvrDate("YYYYMM");
-        let GLO_SEL_CAL_DATE = "";
+  <!-- 실적현황 -->
+  <section class="card">
+    <div class="card__head">
+      <div class="card__title"><h2>실적현황</h2><span class="sub">(일시납제외)</span></div>
+      <div class="toggle2" id="orgToggle">
+        <button class="is-active" data-v="org">조직</button>
+        <button data-v="me">본인</button>
+      </div>
+    </div>
+    <div class="perf-row">
+      <div class="seg" id="prodToggle">
+        <button class="is-active">장기합계</button>
+        <button>생보장기</button>
+        <button>손보장기</button>
+      </div>
+      <span class="unit-text">(단위: 천원, 건)</span>
+    </div>
+    <table class="dash-table">
+      <thead>
+        <tr><th colspan="2">당월 실적 (조직)</th><th colspan="2">전월 실적</th><th colspan="2">전년 동월 실적</th><th colspan="2">당월 목표</th></tr>
+        <tr><th>건수</th><th>보험료</th><th>진척율</th><th>전월실적</th><th>진척율</th><th>전년실적</th><th>진척율</th><th>당월목표</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>128</td>
+          <td><span class="up">▲20%</span>1,119</td>
+          <td>999<span class="pct"> %</span></td>
+          <td><span class="down">▼14%</span>980</td>
+          <td>114<span class="pct"> %</span></td>
+          <td><span class="up">▲34%</span>1,000,000</td>
+          <td>50<span class="pct"> %</span></td>
+          <td><span class="flat">0%</span>3,000,000</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="legend-row">
+      <span><i style="background:#d6dae3"></i>전월</span>
+      <span><i style="background:var(--blue)"></i>당월</span>
+    </div>
+    <div class="chart-box"><canvas id="perfChart"></canvas></div>
+  </section>
 
-        /********************************************************************************
-         * Document Ready
-         ********************************************************************************/
-        jQuery(document).ready(function(){
-            //페이지 초기화 처리
-            frmMain.initPage();
+  <!-- AP순위 -->
+  <section class="card">
+    <div class="tabs" id="rankTabs">
+      <button class="is-active">AP순위</button>
+      <button>팀순위</button>
+      <button>지점순위</button>
+    </div>
+    <div style="text-align:right;margin-bottom:0.4rem;"><span class="unit-text">(단위: 천원, 건)</span></div>
+    <table class="rank-table">
+      <thead><tr><th>순위</th><th>지점</th><th>AP</th><th>ACFP</th><th>FP</th><th>건수</th></tr></thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </section>
 
-            // ==========================================
-            // [UI 영역] Chart.js 그리기 로직 추가 (기존 순수 HTML/CSS용 차트 로직 유지)
-            // ==========================================
-            drawUICharts();
-        });
+  <!-- 우측 상단 툴바 + 배너 -->
+  <div style="display:flex; flex-direction:column;">
+    <div class="card toolbar-card">
+      <div class="pillbtns">
+        <span class="pillbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.67 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.31 1.85.54 2.81.67A2 2 0 0 1 22 16.92Z"/></svg>두낫콜</span>
+        <span class="pillbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h6"/></svg>수수료 명세서</span>
+      </div>
+      <span class="edu-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>보수교육 이수기간 <strong>26.07.01 - 26.12.31</strong></span>
+    </div>
+    <div class="banner-card">
+      <span class="ring ring--a"></span>
+      <span class="ring ring--b"></span>
+      <div>
+        <div class="banner-card__eyebrow">2026 Hybrid Awards</div>
+        <div class="banner-card__title">하반기 시상식 안내<br /><em>지금 신청하면 +5% 추가 인센티브</em></div>
+        <p class="banner-card__desc">12월까지 누적 실적 우수 설계사를 시상합니다.<br />지금 바로 참가 신청을 완료해보세요.</p>
+      </div>
+      <div>
+        <a class="banner-card__cta" href="#">자세히 보기 →</a>
+        <div class="banner-card__dots" style="margin-top:1rem;">
+          <span class="is-active"></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        $(window).on("beforeunload",function(){
-            $.closeAllPopup();
-        });
+  <!-- 계약관리 -->
+  <section class="card">
+    <div class="card__head">
+      <div class="card__title"><h2>계약관리</h2></div>
+      <div class="toggle2" id="ctrToggle">
+        <button class="is-active" data-v="me">본인</button>
+        <button data-v="org">조직</button>
+      </div>
+    </div>
+    <div class="ctr-mgmt-grid">
+      <div>
+        <div class="mini-label">유지율</div>
+        <table class="mini-table">
+          <tr><td>2회</td><td>88 %</td></tr>
+          <tr><td>12회</td><td>74 %</td></tr>
+          <tr><td>21회</td><td>65 %</td></tr>
+          <tr><td>31회</td><td>59 %</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="mini-label">연체율</div>
+        <table class="mini-table">
+          <tr><td>4회</td><td>7 %</td></tr>
+          <tr><td>-</td><td>0 %</td></tr>
+          <tr><td>-</td><td>0 %</td></tr>
+          <tr><td>-</td><td>0 %</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
 
-        var frmMain = {
-            initPage:function(){
-                this.defineGrid();
-                this.initData();
-                this.defineEvent();
-                this.defineForm();
-            },
-            initData:function(){
-                // frmMain.selectHomeBannerInfo();
-                // frmMain.selectAfcrInfo();
-                // frmMain.selectRtnNoticeInfo();
-                // frmMain.selectCntrEdtList();
-                frmMain.selectRtnCntrPfInfo();
-                frmMain.selectRtnMRtoInfo();
-                frmMain.selectRtnCRtoInfo();
-                frmMain.selectRtnEduInfo();
-                frmMain.selectRtnLiskCntrInfo();
-            },
-            defineGrid:function(){
-                // 그리드 로직 생략 (현재 화면에 없음)
-            },
-            defineForm:function(){
-            },
-            removeDay: function() {
-                $(".fc-daygrid-day-number").each(function(){
-                    var day = $(this).text();
-                    day = day.replace("일","");
-                    $(this).text(day);
-                });
-            },
-            defineEvent: function() {
-                // 토글 로직 (본인/조직) - HTML 구조 호환성 맞춤
-                $(".switch li").click(function(e) {
-                    var targetId = '#' + $(this).data("target");
-                    $(this).addClass("active").siblings().removeClass('active');
-                    $(this).parent().attr('class', 'switch').addClass('ck'+ ($(this).index() + 1));
-                    $(".performance .result_tb").hide();
-                    $(".performance " + targetId).show();
-                });
-            },
+  <!-- 관리대상계약 -->
+  <section class="card">
+    <div class="donut-head">
+      <h2 style="font-size:1rem;font-weight:800;margin:0;">관리대상계약</h2>
+      <span class="range">영업정지 2026.02.01 ~ 2026.02.07</span>
+    </div>
+    <div class="donut-grid">
+      <div class="donut-card">
+        <h4>만기리스트</h4>
+        <div class="donut-wrap"><canvas id="donut1"></canvas><div class="donut-center"><b id="CT_TOTAL_1">57</b><small>건</small></div></div>
+        <ul class="donut-legend">
+          <li><span><span class="dot" style="background:var(--purple)"></span>생보</span><b id="CT_LIFE_1">21</b></li>
+          <li><span><span class="dot" style="background:var(--skyblue)"></span>손보</span><b id="CT_FIRE_1">32</b></li>
+          <li><span><span class="dot" style="background:var(--yellow)"></span>일반</span><b id="CT_GEN_1">4</b></li>
+        </ul>
+      </div>
+      <div class="donut-card">
+        <h4>유예/실효예정</h4>
+        <div class="donut-wrap"><canvas id="donut2"></canvas><div class="donut-center"><b id="CT_TOTAL_2">53</b><small>건</small></div></div>
+        <ul class="donut-legend">
+          <li><span><span class="dot" style="background:var(--purple)"></span>생보</span><b id="CT_LIFE_2">21</b></li>
+          <li><span><span class="dot" style="background:var(--skyblue)"></span>손보</span><b id="CT_FIRE_2">32</b></li>
+        </ul>
+      </div>
+      <div class="donut-card">
+        <h4>당월실효</h4>
+        <div class="donut-wrap"><canvas id="donut3"></canvas><div class="donut-center"><b id="CT_TOTAL_3">0</b><small>건</small></div></div>
+        <ul class="donut-legend">
+          <li><span><span class="dot" style="background:var(--purple)"></span>생보</span><b id="CT_LIFE_3">0</b></li>
+          <li><span><span class="dot" style="background:var(--skyblue)"></span>손보</span><b id="CT_FIRE_3">0</b></li>
+        </ul>
+      </div>
+      <div class="donut-card">
+        <h4>서류미첨부</h4>
+        <div class="donut-wrap"><canvas id="donut4"></canvas><div class="donut-center"><b id="CT_TOTAL_4">14</b><small>건</small></div></div>
+        <ul class="donut-legend">
+          <li><span><span class="dot" style="background:var(--lightblue)"></span>비교안내</span><b id="CT_CMPR_4">2</b></li>
+          <li><span><span class="dot" style="background:var(--orange)"></span>고지의무</span><b id="CT_DUTY_4">4</b></li>
+          <li><span><span class="dot" style="background:var(--green)"></span>완판확인서</span><b id="CT_PSN_4">8</b></li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-            // ----------------------------------------------------
-            // 실적 조회 (여기서 DOM ID에 값을 바인딩 합니다)
-            // ----------------------------------------------------
-            selectRtnCntrPfInfo: function() {
-                var objJsonParams = new GawebJson();
-                objJsonParams.setPoolName("GAIA");
-                objJsonParams.setService("frmMain");
-                objJsonParams.setMethod("selectRtnCntrPfInfo");
+  <!-- 게시판 -->
+  <section class="card">
+    <div class="tabs" id="boardTabs">
+      <button class="is-active">게시판</button>
+      <button>시책안내</button>
+      <button>교육일정/신청</button>
+      <button>인사일정</button>
+    </div>
+    <ul class="board-list" id="boardList"></ul>
+  </section>
 
-                $.bizServiceCall(objJsonParams, true, "frmMain.callBackCntrPfInfo");
-                objJsonParams = null;
-            },
-            callBackCntrPfInfo: function(runJsonReturn) {
-                let objJsonReturn = runJsonReturn;
-                if (!objJsonReturn.getErrorFlag()) {
-                    let retData = objJsonReturn.jsonData.DATA[0];
-                    if (!$.isEmpty(retData)) {
+</main>
 
-                        if(gAuthLvlCd != '99'){
-                            $('li[name="btn_cntr_pf"][data-target="org"]').click();
-                        }else{
-                            $('li[name="btn_cntr_pf"][data-target="personal"]').click();
-                        }
+<footer style="text-align:center;font-size:0.75rem;color:#9aa0ac;padding:1.5rem 1rem 2.5rem;">
+  AFG ERP Sanitized Demo — Portfolio용 재구현 버전입니다. 화면의 모든 수치·게시글은 가상의 샘플 데이터입니다.
+</footer>
 
-                        // 조직 셋팅
-                        if(retData.ORG_ALL_CNT) $('#ORG_ALL_CNT').text( Number(retData.ORG_ALL_CNT).toLocaleString() );
-                        if(retData.ORG_CMM_ALL_FST_PREM) $('#ORG_CMM_ALL_FST_PREM').text(Math.trunc(Number(retData.ORG_CMM_ALL_FST_PREM.replaceAll(',', '')) / 1000).toLocaleString());
-                        if(retData.ORG_PMM_ALL_FST_PREM) $('#ORG_PMM_ALL_FST_PREM').text(Math.trunc(Number(retData.ORG_PMM_ALL_FST_PREM.replaceAll(',', '')) / 1000).toLocaleString());
-                        if(retData.ORG_PMM_ALL_FST_RTO) $('#ORG_PMM_ALL_FST_RTO').text(retData.ORG_PMM_ALL_FST_RTO);
+<script>
+(function(){
+  "use strict";
 
-                        // 본인 셋팅
-                        if(retData.EMP_ALL_CNT) $('#EMP_ALL_CNT').text( Number(retData.EMP_ALL_CNT).toLocaleString() );
-                        if(retData.EMP_CMM_ALL_FST_PREM) $('#EMP_CMM_ALL_FST_PREM').text(Math.trunc(Number(retData.EMP_CMM_ALL_FST_PREM.replaceAll(',', '')) / 1000).toLocaleString());
-                        if(retData.EMP_PMM_ALL_FST_PREM) $('#EMP_PMM_ALL_FST_PREM').text(Math.trunc(Number(retData.EMP_PMM_ALL_FST_PREM.replaceAll(',', '')) / 1000).toLocaleString());
-                        if(retData.EMP_PMM_ALL_FST_RTO) $('#EMP_PMM_ALL_FST_RTO').text(retData.EMP_PMM_ALL_FST_RTO);
-                    }
-                } else {
-                    GwbMsg(objJsonReturn.getMsg(), "E");
-                }
-                runJsonReturn = null;
-                objJsonReturn = null;
-            },
+  /* 탭/토글 인터랙션 */
+  function bindToggle(sel){
+    document.querySelectorAll(sel + " button").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        btn.parentElement.querySelectorAll("button").forEach(function(b){ b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+      });
+    });
+  }
+  ["#orgToggle", "#prodToggle", "#rankTabs", "#ctrToggle", "#boardTabs"].forEach(bindToggle);
 
-            // ----------------------------------------------------
-            // 관리대상계약 조회
-            // ----------------------------------------------------
-            selectRtnLiskCntrInfo: function() {
-                var objJsonParams = new GawebJson();
-                objJsonParams.setPoolName("GAIA");
-                objJsonParams.setService("frmMain");
-                objJsonParams.setMethod("selectRtnLiskCntrInfo");
+  /* 보수교육 세션 타이머 (단순 데모용 카운트다운) */
+  var remain = 59 * 60 + 58;
+  setInterval(function(){
+    remain = Math.max(0, remain - 1);
+    var m = String(Math.floor(remain / 60)).padStart(2, "0");
+    var s = String(remain % 60).padStart(2, "0");
+    document.getElementById("sessionTimer").textContent = m + ":" + s;
+  }, 1000);
 
-                $.bizServiceCall(objJsonParams, true, "frmMain.callBackLiskCntrInfo");
-                objJsonParams = null;
-            },
-            callBackLiskCntrInfo: function(runJsonReturn) {
-                let objJsonReturn = runJsonReturn;
-                if (!objJsonReturn && window.runJsonReturn) objJsonReturn = window.runJsonReturn; // Mock Fallback
+  /* AP순위 샘플 데이터 */
+  var rankRows = [
+    ["로드", "박OO", 11583, 8366, 36],
+    ["스타", "김OO", 11020, 8120, 34],
+    ["오너", "이OO", 10870, 7980, 33],
+    ["스타", "최OO", 10210, 7610, 31],
+    ["로드", "정OO", 9950, 7300, 29],
+    ["로드", "한OO", 9820, 7120, 28],
+    ["스타", "윤OO", 9540, 7010, 27],
+    ["로드", "서OO", 9210, 6880, 26],
+    ["오너", "임OO", 8970, 6650, 25],
+    ["로드", "홍OO", 8740, 6400, 24]
+  ];
+  var rankBody = document.getElementById("rankBody");
+  rankBody.innerHTML = rankRows.map(function(r, i){
+    return "<tr><td><span class=\"rank-num\">" + (i + 1) + "</span></td><td>" + r[0] + "</td><td>" + r[1] +
+      "</td><td>" + r[2].toLocaleString() + "</td><td>" + r[3].toLocaleString() + "</td><td>" + r[4] + "</td></tr>";
+  }).join("");
 
-                if (objJsonReturn && !objJsonReturn.getErrorFlag()) {
-                    let retData = objJsonReturn.jsonData.DATA[0];
-                    if (!$.isEmpty(retData)) {
-                        // Card 1
-                        if(retData.CT_TOTAL_CNT_1 != null) $('#CT_TOTAL_CNT_1').text(retData.CT_TOTAL_CNT_1);
-                        if(retData.CT_LIFE_CNT_1 != null) $('#CT_LIFE_CNT_1').text(retData.CT_LIFE_CNT_1);
-                        if(retData.CT_FIRE_CNT_1 != null) $('#CT_FIRE_CNT_1').text(retData.CT_FIRE_CNT_1);
-                        if(retData.CT_GENERAL_CNT_1 != null) $('#CT_GENERAL_CNT_1').text(retData.CT_GENERAL_CNT_1);
+  /* 게시판 샘플 데이터 */
+  var boardRows = [
+    ["카드뉴스", "카드뉴스_테스트 발송 안내입니다", "어센틱", "06-25"],
+    ["전체게시판", "제목", "어센틱", "06-10"],
+    ["교육공지", "테스트", "어센틱", "05-06"],
+    ["하이브리드...", "테스트", "어센틱", "05-06"],
+    ["카드뉴스", "카드뉴스_테스트 발송 안내입니다", "어센틱", "04-23"],
+    ["과정 자료실", "과정자료실_테스트 업로드 안내", "어센틱", "04-14"]
+  ];
+  document.getElementById("boardList").innerHTML = boardRows.map(function(r){
+    return "<li><span class=\"board-cat\">" + r[0] + "</span><span class=\"board-title\">" + r[1] +
+      "</span><span class=\"board-author\">" + r[2] + "</span><span class=\"board-date\">" + r[3] + "</span></li>";
+  }).join("");
 
-                        // Card 2
-                        if(retData.CT_TOTAL_CNT_2 != null) $('#CT_TOTAL_CNT_2').text(retData.CT_TOTAL_CNT_2);
-                        if(retData.CT_LIFE_CNT_2 != null) $('#CT_LIFE_CNT_2').text(retData.CT_LIFE_CNT_2);
-                        if(retData.CT_FIRE_CNT_2 != null) $('#CT_FIRE_CNT_2').text(retData.CT_FIRE_CNT_2);
+  /* 실적 바 차트 (전월 vs 당월) */
+  var perfCtx = document.getElementById("perfChart").getContext("2d");
+  var days = 30;
+  var labels = [], lastMonth = [], thisMonth = [];
+  for (var i = 1; i <= days; i++) {
+    labels.push(i);
+    var base = Math.pow(i / days, 2) * 3000000;
+    lastMonth.push(Math.max(20000, Math.min(3800000, base + (Math.random() * 300000 - 80000))));
+    thisMonth.push(Math.max(20000, Math.min(3800000, base + 120000 + (Math.random() * 350000 - 60000))));
+  }
+  var gradient = perfCtx.createLinearGradient(0, 0, 0, 280);
+  gradient.addColorStop(0, "#1b2e8a");
+  gradient.addColorStop(1, "#3258e0");
 
-                        // Card 3
-                        if(retData.CT_TOTAL_CNT_3 != null) $('#CT_TOTAL_CNT_3').text(retData.CT_TOTAL_CNT_3);
-                        if(retData.CT_LIFE_CNT_3 != null) $('#CT_LIFE_CNT_3').text(retData.CT_LIFE_CNT_3);
-                        if(retData.CT_FIRE_CNT_3 != null) $('#CT_FIRE_CNT_3').text(retData.CT_FIRE_CNT_3);
-
-                        // Card 4
-                        if(retData.CT_TOTAL_CNT_4 != null) $('#CT_TOTAL_CNT_4').text(retData.CT_TOTAL_CNT_4);
-                        if(retData.CT_CMPR_DESC_CNT_4 != null) $('#CT_CMPR_DESC_CNT_4').text(retData.CT_CMPR_DESC_CNT_4);
-                        if(retData.CT_CCN_DUTY_CNT_4 != null) $('#CT_CCN_DUTY_CNT_4').text(retData.CT_CCN_DUTY_CNT_4);
-                        if(retData.CT_PSN_DATA_CNT_4 != null) $('#CT_PSN_DATA_CNT_4').text(retData.CT_PSN_DATA_CNT_4);
-                    }
-                }
-
-                // DOM 업데이트 후 차트 다시 그리기
-                frmMain.drawGaugeCharts();
-
-                runJsonReturn = null;
-                objJsonReturn = null;
-            },
-
-            // 기타 유지율, 수금률, 교육 함수 껍데기 유지
-            selectRtnMRtoInfo: function() {},
-            selectRtnCRtoInfo: function() {},
-            selectRtnEduInfo: function() {},
-
-            chartMap: {},
-
-            // 텍스트를 숫자로 변환
-            getTextNumber: function(selector) {
-                var text = $(selector).text();
-                if (!text) return 0;
-                text = String(text).replace(/,/g, "").replace(/\s/g, "");
-                return Number(text) || 0;
-            },
-
-            // 기존 차트 제거
-            destroyChart: function(chartKey) {
-                if (frmMain.chartMap[chartKey]) {
-                    frmMain.chartMap[chartKey].destroy();
-                    frmMain.chartMap[chartKey] = null;
-                }
-            },
-
-            // 도넛 차트 생성
-            createGaugeChart: function(chartKey, canvasId, dataArray, colorArray) {
-                var canvas = document.getElementById(canvasId);
-                if (!canvas || typeof Chart === "undefined") return;
-
-                frmMain.destroyChart(chartKey);
-
-                var ctx = canvas.getContext("2d");
-                var isEmpty = dataArray.length === 0 || dataArray.every(function(val){ return val === 0; });
-                var chartData = isEmpty ? [1] : dataArray;
-                var chartColors = isEmpty ? ["#E2E8F0"] : colorArray;
-
-                frmMain.chartMap[chartKey] = new Chart(ctx, {
-                    type: "doughnut",
-                    data: {
-                        datasets: [{
-                            data: chartData,
-                            backgroundColor: chartColors,
-                            borderWidth: 0,
-                            borderRadius: 20,
-                            spacing: isEmpty ? 0 : 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: "80%",
-                        circumference: 260, // Chart.js v4+ uses degrees
-                        rotation: 230,
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                        animation: { animateScale: true, animateRotate: true }
-                    }
-                });
-            },
-
-            // 현재 DOM에 바인딩된 숫자 기준으로 차트 다시 그림
-            drawGaugeCharts: function() {
-                frmMain.createGaugeChart(
-                    "contractCard1", "doughnut1",
-                    [frmMain.getTextNumber("#CT_LIFE_CNT_1"), frmMain.getTextNumber("#CT_FIRE_CNT_1"), frmMain.getTextNumber("#CT_GENERAL_CNT_1")],
-                    ["#a855f7", "#38bdf8", "#eab308"]
-                );
-
-                frmMain.createGaugeChart(
-                    "contractCard2", "doughnut2",
-                    [frmMain.getTextNumber("#CT_LIFE_CNT_2"), frmMain.getTextNumber("#CT_FIRE_CNT_2")],
-                    ["#a855f7", "#38bdf8"]
-                );
-
-                frmMain.createGaugeChart(
-                    "contractCard3", "doughnut3",
-                    [frmMain.getTextNumber("#CT_LIFE_CNT_3"), frmMain.getTextNumber("#CT_FIRE_CNT_3")],
-                    ["#a855f7", "#38bdf8"]
-                );
-
-                frmMain.createGaugeChart(
-                    "contractCard4", "doughnut4",
-                    [frmMain.getTextNumber("#CT_CMPR_DESC_CNT_4"), frmMain.getTextNumber("#CT_CCN_DUTY_CNT_4"), frmMain.getTextNumber("#CT_PSN_DATA_CNT_4")],
-                    ["#60a5fa", "#fb923c", "#34d399"]
-                );
-            }
+  new Chart(perfCtx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "전월", data: lastMonth, backgroundColor: "#d6dae3", barPercentage: 0.62, categoryPercentage: 0.8 },
+        { label: "당월", data: thisMonth, backgroundColor: gradient, barPercentage: 0.62, categoryPercentage: 0.8 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#fff", titleColor: "#6b7280", bodyColor: "#1f2433",
+          borderColor: "#e7e9ee", borderWidth: 1, padding: 10,
+          callbacks: { label: function(c){ return c.dataset.label + "  " + Math.round(c.parsed.y).toLocaleString(); } }
         }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { min: 0, max: 4000000, ticks: { stepSize: 500000, callback: function(v){ return v.toLocaleString(); } }, grid: { color: "#f1f2f5" } }
+      }
+    }
+  });
 
-        // ==========================================
-        // UI 렌더링용 차트 그리기 함수 분리
-        // ==========================================
-        function drawUICharts() {
-            // 1. Bar Chart (실적현황)
-            const barCanvas = document.getElementById('myCanvas');
-            if(barCanvas) {
-                const barCtx = barCanvas.getContext('2d');
-                const daysInMonth = 31;
-                const labels = [];
-                const lastMonthData = [];
-                const thisMonthData = [];
-
-                for (let i = 1; i <= daysInMonth; i++) {
-                    labels.push(i);
-                    let baseVal = Math.pow(i / daysInMonth, 2) * 2800000;
-                    let last = baseVal + (Math.random() * 400000 - 100000);
-                    let current = baseVal + (Math.random() * 500000 - 50000);
-                    lastMonthData.push(Math.max(10000, Math.min(3000000, last)));
-                    thisMonthData.push(Math.max(10000, Math.min(3000000, current)));
-                }
-
-                let gradientThisMonth = barCtx.createLinearGradient(0, 0, 0, 400);
-                gradientThisMonth.addColorStop(0, '#1e3a8a');
-                gradientThisMonth.addColorStop(1, '#3b5bdb');
-
-                const columnHighlightPlugin = {
-                    id: 'columnHighlight',
-                    beforeDraw: (chart) => {
-                        if (chart.tooltip && chart.tooltip._active && chart.tooltip._active.length) {
-                            const ctx = chart.ctx;
-                            const activePoint = chart.tooltip._active[0];
-                            if (activePoint && activePoint.index !== undefined) {
-                                const xCenter = chart.scales.x.getPixelForTick(activePoint.index);
-                                const width = (chart.chartArea.right - chart.chartArea.left) / daysInMonth;
-                                ctx.save();
-                                ctx.fillStyle = '#f1f5f9';
-                                ctx.fillRect(xCenter - width/2, chart.chartArea.top, width, chart.chartArea.bottom - chart.chartArea.top);
-                                ctx.restore();
-                            }
-                        }
-                    }
-                };
-
-                new Chart(barCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { label: 'Last Month', data: lastMonthData, backgroundColor: '#cbd5e1', barPercentage: 0.6, categoryPercentage: 0.8 },
-                            { label: 'This Month', data: thisMonthData, backgroundColor: gradientThisMonth, barPercentage: 0.6, categoryPercentage: 0.8 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                        plugins: {
-                            legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 12, color: '#64748b', font: { size: 12 } } },
-                            tooltip: { backgroundColor: '#f8fafc', titleColor: '#64748b', bodyColor: '#0f172a', borderColor: '#e2e8f0', borderWidth: 1, padding: 12, boxPadding: 6, boxWidth: 12, boxHeight: 12, usePointStyle: false, bodyFont: { weight: 'bold' }, itemSort: (a, b) => b.datasetIndex - a.datasetIndex, callbacks: { title: () => null, label: function(context) { let label = context.dataset.label || ''; if (label) label += '    '; if (context.parsed.y !== null) label += Math.round(context.parsed.y).toLocaleString('en-US'); return label; } } }
-                        },
-                        scales: {
-                            x: { grid: { display: false, drawBorder: true, borderColor: '#cbd5e1' }, ticks: { color: '#64748b', font: { size: 11 } } },
-                            y: { min: 0, max: 3000000, ticks: { stepSize: 500000, color: '#64748b', font: { size: 11 }, callback: value => value.toLocaleString('en-US') }, grid: { color: '#f1f5f9', borderDash: [3, 3], drawBorder: false } }
-                        }
-                    },
-                    plugins: [columnHighlightPlugin]
-                });
-            }
-
-            // 게이지 차트들은 frmMain 내장 함수를 호출하여 렌더링 (초기 1회)
-            frmMain.drawGaugeCharts();
-        }
-    </script>
+  /* 도넛(게이지) 차트 */
+  function makeDonut(canvasId, data, colors){
+    var c = document.getElementById(canvasId);
+    if (!c) return;
+    var isEmpty = data.every(function(v){ return v === 0; });
+    new Chart(c.getContext("2d"), {
+      type: "doughnut",
+      data: { datasets: [{ data: isEmpty ? [1] : data, backgroundColor: isEmpty ? ["#e9ebef"] : colors, borderWidth: 0, borderRadius: 20, spacing: isEmpty ? 0 : 4 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: "78%",
+        circumference: 260, rotation: 230,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        animation: { animateScale: true, animateRotate: true }
+      }
+    });
+  }
+  makeDonut("donut1", [21, 32, 4], ["#a855f7", "#38bdf8", "#eab308"]);
+  makeDonut("donut2", [21, 32], ["#a855f7", "#38bdf8"]);
+  makeDonut("donut3", [0, 0], ["#a855f7", "#38bdf8"]);
+  makeDonut("donut4", [2, 4, 8], ["#60a5fa", "#fb923c", "#34d399"]);
+})();
+</script>
 </body>
 </html>
