@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AFG ERP · 수수료 정산 대시보드 (Sanitized Demo)</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="nda-banner">
+    <strong>Sanitized Demo</strong> — 실제 기업 내부 시스템(NDA)의 화면 구조와 컴포넌트를 동일한 기술 스택으로 재구현한 클린 버전입니다. 모든 데이터는 가상의 샘플입니다.
+  </div>
+
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="logo-mark">A</span>
+      <span class="logo-text">AFG <em>ERP</em></span>
+    </div>
+    <nav class="topbar__nav">
+      <a href="#" class="active">대시보드</a>
+      <a href="#">실적관리</a>
+      <a href="#">고객관리</a>
+      <a href="#">계약관리</a>
+      <a href="#">수수료관리</a>
+      <a href="#">게시판</a>
+    </nav>
+    <div class="topbar__actions">
+      <button class="icon-btn" aria-label="검색">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button class="icon-btn" aria-label="알림">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="icon-btn__dot"></span>
+      </button>
+      <div class="user-chip">관리자 <strong>홍OO</strong>님</div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="card card--chart" aria-labelledby="perf-title">
+      <div class="card__head">
+        <h2 id="perf-title">일일실적</h2>
+        <div class="seg-toggle" id="periodToggle">
+          <button class="seg-toggle__btn is-active" data-period="day">일간형</button>
+          <button class="seg-toggle__btn" data-period="month">월간형</button>
+          <button class="seg-toggle__btn" data-period="quarter">분기형</button>
+        </div>
+      </div>
+      <div class="perf-summary">
+        <div><span>시작 실적</span><strong id="perfStart">1,118</strong></div>
+        <div><span>금일 실적</span><strong id="perfToday" class="up">1,000,000</strong></div>
+        <div><span>누적 실적</span><strong id="perfTotal">3,000,000</strong></div>
+      </div>
+      <canvas id="perfChart" height="170"></canvas>
+    </section>
+
+    <section class="card card--summary" aria-labelledby="sum-title">
+      <div class="card__head">
+        <h2 id="sum-title">AFG실적</h2>
+        <div class="seg-toggle seg-toggle--mini">
+          <button class="is-active">입금</button>
+          <button>처리</button>
+          <button>취소</button>
+        </div>
+      </div>
+      <ul class="summary-list">
+        <li><span class="dot dot--blue"></span><span class="label">입금 금액</span><strong>11,184,600</strong></li>
+        <li><span class="dot dot--green"></span><span class="label">처리 건수</span><strong>7,300</strong></li>
+        <li><span class="dot dot--amber"></span><span class="label">취소 건수</span><strong>7,300</strong></li>
+        <li><span class="dot dot--purple"></span><span class="label">순 실적</span><strong>1,000,000</strong></li>
+      </ul>
+    </section>
+
+    <aside class="card card--quickmenu" aria-labelledby="quick-title">
+      <h2 id="quick-title">퀵메뉴</h2>
+      <div class="quickmenu-grid">
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>고객등록</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h6"/></svg><span>계약서작성</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span>수수료조회</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>통계분석</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span>일정관리</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg><span>문서함</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>지점조회</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 3 6 6 1-4.5 4.5L17.5 20 12 17l-5.5 3 1-6.5L3 9l6-1Z"/></svg><span>즐겨찾기</span></button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.9.5-1.4 1-1.4 2.2"/><path d="M12 17h.01"/></svg><span>도움말</span></button>
+      </div>
+    </aside>
+
+    <section class="card card--gauge" aria-labelledby="contract-title">
+      <div class="card__head">
+        <h2 id="contract-title">계약현황</h2>
+        <span class="range">2025.07 – 2026.06</span>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge" style="--pct:67"><span class="gauge__num">67%</span><span class="gauge__label">전체 진행</span></div>
+        <div class="gauge" style="--pct:53"><span class="gauge__num">53%</span><span class="gauge__label">신규 계약</span></div>
+        <div class="gauge" style="--pct:14"><span class="gauge__num">14%</span><span class="gauge__label">갱신 계약</span></div>
+      </div>
+    </section>
+
+    <section class="card card--gauge" aria-labelledby="csat-title">
+      <div class="card__head">
+        <h2 id="csat-title">고객만족도</h2>
+        <span class="range">2025.07 – 2026.06</span>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge gauge--alt" style="--pct:82"><span class="gauge__num">82%</span><span class="gauge__label">상담 만족</span></div>
+        <div class="gauge gauge--alt" style="--pct:74"><span class="gauge__num">74%</span><span class="gauge__label">처리 속도</span></div>
+        <div class="gauge gauge--alt" style="--pct:91"><span class="gauge__num">91%</span><span class="gauge__label">재이용 의사</span></div>
+      </div>
+    </section>
+
+    <section class="card card--board" aria-labelledby="board-title">
+      <div class="card__head">
+        <h2 id="board-title">게시판</h2>
+        <div class="seg-toggle seg-toggle--mini">
+          <button class="is-active">공지사항</button>
+          <button>자료실</button>
+        </div>
+      </div>
+      <ul class="board-list">
+        <li><span class="badge">공지</span>2026년 상반기 수수료 정산 일정 안내<time>06.20</time></li>
+        <li><span class="badge badge--muted">일반</span>ERP 시스템 정기 점검 안내 (06.28 02:00~04:00)<time>06.18</time></li>
+        <li><span class="badge">공지</span>신규 계약서 양식 적용 안내<time>06.12</time></li>
+        <li><span class="badge badge--muted">일반</span>고객 만족도 조사 결과 공유<time>06.05</time></li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="page-footer">AFG ERP Sanitized Demo — Portfolio용 재구현 버전입니다. 실제 사내 시스템과 무관한 가상의 데이터입니다.</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="script.js"></script>
+</body>
+</html>
