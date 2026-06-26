@@ -6,6 +6,7 @@
 <title>AFG ERP · 실적현황 대시보드 (Sanitized Demo)</title>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <style>
   :root{
     --ink:#1f2433; --muted:#7c8290; --border:#e7e9ee; --bg:#f4f5f8;
@@ -19,8 +20,9 @@
   .topbar{ display:flex; align-items:center; gap:1.4rem; background:#fff; border-bottom:1px solid var(--border); padding:0.65rem 1.4rem; }
   .brand{ display:flex; align-items:center; gap:0.4rem; font-weight:800; font-size:1.05rem; color:var(--blue-dark); flex-shrink:0; }
   .brand svg{ width:22px; height:22px; }
-  .topnav{ display:flex; gap:1.1rem; flex:1; overflow:hidden; }
-  .topnav a{ color:#4b5160; font-size:0.84rem; font-weight:600; white-space:nowrap; }
+  .topnav{ flex:1; overflow:hidden; }
+  .topnav .swiper-slide{ width:auto; flex-shrink:0; }
+  .topnav a{ color:#4b5160; font-size:0.84rem; font-weight:600; white-space:nowrap; text-decoration:none; }
   .top-actions{ display:flex; align-items:center; gap:1.1rem; flex-shrink:0; }
   .top-actions .iconlink{ display:flex; flex-direction:column; align-items:center; gap:0.2rem; color:#8a8f9b; font-size:0.65rem; }
   .top-actions .iconlink svg{ width:18px; height:18px; }
@@ -29,7 +31,7 @@
   .user-chip{ display:flex; align-items:center; gap:0.5rem; padding-left:0.9rem; border-left:1px solid var(--border); }
   .user-avatar{ width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#a855f7,#3258e0); }
   .user-meta{ font-size:0.78rem; color:#4b5160; line-height:1.25; }
-  .user-meta .timer{ color:#ef4444; font-weight:700; }
+  .user-meta .timer{ color:#ef4444; font-weight:700; display:inline-block; width:36px; }
   .icon-btn-plain{ color:#8a8f9b; display:flex; }
   .icon-btn-plain svg{ width:18px; height:18px; }
 
@@ -148,7 +150,6 @@
     .layout > :nth-child(3), .layout > :nth-child(6){ grid-column:1 / -1; }
   }
   @media (max-width:760px){
-    .topnav{ display:none; }
     .layout{ grid-template-columns:1fr; padding:0.9rem; }
     .ctr-mgmt-grid, .donut-grid{ grid-template-columns:1fr 1fr; }
   }
@@ -161,19 +162,21 @@
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 2 21h6.2L12 13.4 15.8 21H22z"/></svg>
     AFG
   </div>
-  <nav class="topnav">
-    <a href="#">인사관리</a>
-    <a href="#">계약관리</a>
-    <a href="#">영업지원</a>
-    <a href="#">교육</a>
-    <a href="#">리스크관리</a>
-    <a href="#">준법</a>
-    <a href="#">경영관리</a>
-    <a href="#">통계</a>
-    <a href="#">수수료관리</a>
-    <a href="#">게시판</a>
-    <a href="#">시스템관리</a>
-    <a href="#">개발자가이드</a>
+  <nav class="topnav swiper" id="topnavSwiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide"><a href="#">인사관리</a></div>
+      <div class="swiper-slide"><a href="#">계약관리</a></div>
+      <div class="swiper-slide"><a href="#">영업지원</a></div>
+      <div class="swiper-slide"><a href="#">교육</a></div>
+      <div class="swiper-slide"><a href="#">리스크관리</a></div>
+      <div class="swiper-slide"><a href="#">준법</a></div>
+      <div class="swiper-slide"><a href="#">경영관리</a></div>
+      <div class="swiper-slide"><a href="#">통계</a></div>
+      <div class="swiper-slide"><a href="#">수수료관리</a></div>
+      <div class="swiper-slide"><a href="#">게시판</a></div>
+      <div class="swiper-slide"><a href="#">시스템관리</a></div>
+      <div class="swiper-slide"><a href="#">개발자가이드</a></div>
+    </div>
   </nav>
   <div class="top-actions">
     <span class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
@@ -365,9 +368,19 @@
   AFG ERP Sanitized Demo — Portfolio용 재구현 버전입니다. 화면의 모든 수치·게시글은 가상의 샘플 데이터입니다.
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 (function(){
   "use strict";
+
+  /* 상단 메뉴: free-drag + momentum (좁은 화면에서는 스와이프로 넘기고,
+     모든 항목이 들어가는 넓은 화면에서는 일반 가로 목록처럼 보임) */
+  new Swiper("#topnavSwiper", {
+    slidesPerView: "auto",
+    spaceBetween: 18,
+    freeMode: { enabled: true, momentum: true },
+    grabCursor: true
+  });
 
   /* 탭/토글 인터랙션 */
   function bindToggle(sel){
